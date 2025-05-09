@@ -4,19 +4,19 @@
 // The underscores don't mean anything - you can have a layer called STUFF or any other name.
 // Layer names don't all need to be of the same length, obviously, and you can also skip them
 // entirely and just use numbers.
-#define _COLEMAK 0
-#define _QWERTY 1
-#define _SAFE 2
-#define _LHAND 3
-#define _MEDIA 4
-#define _NAV 5
-#define _MOUSE 6
-#define _SYM 7
-#define _NUM 8
-#define _FUN 9
-#define _RHAND 10
-#define _RNAV 11
-#define _RNUM 12
+#define _QWERTY  0
+#define _COLEMAK 1
+#define _SAFE    2
+#define _LHAND   3
+#define _MEDIA   4
+#define _MOUSE   5
+#define _SYM     6
+#define _NUM     7
+#define _NAV     8
+#define _FUN     9
+#define _RHAND  10
+#define _RNAV   11
+#define _RNUM   12
 
 #define QWERTY_ DF(_QWERTY)
 #define COLEMAK DF(_COLEMAK)
@@ -48,9 +48,11 @@ enum custom_keycodes {
 
 // Shortcut to make keymap more readable
 #define LGUI_A  LGUI_T(KC_A)
-#define LALT_S  LALT_T(KC_S)
-#define LCTL_D  LCTL_T(KC_D)
-#define LSFT_F  LSFT_T(KC_F)
+#define LGUI_S  LGUI_T(KC_S)
+#define LALT_D  LALT_T(KC_D)
+#define LCTL_F  LCTL_T(KC_F)
+#define SFT_SPC LSFT_T(KC_SPC)
+#define ALT_ENT LALT_T(KC_ENT)
 
 #define RSFT_J  RSFT_T(KC_J)
 #define RCTL_K  RCTL_T(KC_K)
@@ -72,10 +74,13 @@ enum custom_keycodes {
 // #define LT(BUTTON, KC_SLSH)
 #define MED_ESC LT(_MEDIA, KC_ESC)
 #define NAV_SPC LT(_NAV, KC_SPC)
+#define NAV_V   LT(_NAV, KC_V)
+#define NAV_DOT LT(_NAV, KC_DOT)
 #define MOU_TAB LT(_MOUSE, KC_TAB)
 #define SYM_ENT LT(_SYM, KC_ENT)
 #define SYM_TAB LT(_SYM, KC_TAB)
 #define NUM_BSP LT(_NUM, KC_BSPC)
+#define NUM_Z   LT(_NUM, KC_Z)
 #define FUN_DEL LT(_FUN, KC_DEL)
 #define RNM_ESC LT(_RNUM, KC_ESC)
 
@@ -94,6 +99,7 @@ enum custom_keycodes {
 #define TG_SAFE TG(_SAFE)
 #define OS_RHND OSL(_RHAND)
 
+// Modified keys
 #define KC_PND  LSFT(KC_3)
 #define PASTE   LCTL(KC_V)
 #define COPY    LCTL(KC_C)
@@ -102,8 +108,19 @@ enum custom_keycodes {
 #define REDO    LCTL(KC_Y)
 #define CTL_LFT LCTL(KC_LEFT)
 #define CTL_RGT LCTL(KC_RGHT)
-
 #define KC_DQOT LSFT(KC_2)
+
+// Tap-hold keys
+#define TH_RGHT LT(0, KC_RGHT)
+#define TH_LEFT LT(0, KC_LEFT)
+#define TH_DOWN LT(0, KC_DOWN)
+#define TH_UP   LT(0, KC_UP)
+#define TH_COPY LT(0, COPY)
+#define TH_BSPC LT(0, KC_BSPC)
+#define TH_UNDO LT(0, UNDO)
+#define TH_TAB  LT(0, KC_TAB)
+#define TH_ESC  LT(0, KC_ESC)
+#define TH_BDEL LT(0, KC_DEL)
 
 //#define APP_1 LGUI(KC_1)
 //#define APP_2 LGUI(KC_2)
@@ -117,7 +134,7 @@ enum custom_keycodes {
 //#define APP_0 LGUI(KC_0)
 
 
-enum {
+enum tap_dance_keys{
   U_SP = 0,
   DOT,
   CLN
@@ -129,6 +146,30 @@ tap_dance_action_t tap_dance_actions[] = {
 };
 
 
+// Combos
+enum combo_events {
+  NUM_WORD_ON,
+  COMBO_LENGTH
+};
+uint16_t COMBO_LEN = COMBO_LENGTH;
+
+const uint16_t PROGMEM num_word_on[] = {KC_X    ,KC_C    ,NAV_V   ,COMBO_END};
+
+combo_t key_combos[] = {
+    [NUM_WORD_ON] = COMBO_ACTION(num_word_on),
+};
+
+void process_combo_event(uint16_t combo_index, bool pressed) {
+  switch(combo_index) {
+    case NUM_WORD_ON:
+        if (pressed) {
+            caps_word_off();
+            layer_on(_NUM);
+        }
+        break;
+  }
+}
+
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
@@ -138,11 +179,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐                         ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
      KC_TAB  ,KC_Q    ,KC_W    ,KC_E    ,KC_R    ,KC_T    ,DM_REC1 ,                          DM_REC2 ,KC_Y    ,KC_U    ,KC_I    ,KC_O    ,KC_P    ,KC_EQL  ,
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┤                         ├────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-     CW_TOGG ,LGUI_A  ,LALT_S  ,LCTL_D  ,LSFT_F  ,KC_G    ,DM_PLY1 ,                          DM_PLY2 ,KC_H    ,RSFT_J  ,RCTL_K  ,LALT_L  ,RGUI_SC ,KC_QUOT ,
+     CW_TOGG ,LGUI_A  ,LGUI_S  ,LALT_D  ,LCTL_F  ,KC_G    ,DM_PLY1 ,                          DM_PLY2 ,KC_H    ,RSFT_J  ,RCTL_K  ,LALT_L  ,RGUI_SC ,KC_QUOT ,
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┼────────┐       ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-     KC_LSFT ,KC_Z    ,KC_X    ,KC_C    ,KC_V    ,KC_B    ,TG(_NAV),TG_LHND ,        XXXXXXX ,TG(_NUM),KC_N    ,KC_M    ,KC_COMM ,KC_DOT  ,KC_SLSH ,KC_RSFT ,
+     KC_LSFT ,NUM_Z   ,KC_X    ,KC_C    ,NAV_V   ,KC_B    ,TG(_NAV),TG_LHND ,        XXXXXXX ,TG(_NUM),KC_N    ,KC_M    ,KC_COMM ,KC_DOT  ,KC_SLSH ,KC_RSFT ,
   //├────────┼────────┼────────┼────────┼────┬───┴────┬───┼────────┼────────┤       ├────────┼────────┼───┬────┴───┬────┼────────┼────────┼────────┼────────┤
-     KC_LCTL ,KC_LGUI ,COLEMAK ,KC_APP  ,     MED_ESC ,    NAV_SPC ,MOU_TAB ,        SYM_ENT ,NUM_BSP ,    FUN_DEL ,     KC_LEFT ,KC_DOWN ,KC_UP   ,KC_RGHT
+     KC_LCTL ,KC_LGUI ,COLEMAK ,KC_APP  ,     ALT_ENT ,    SFT_SPC ,QK_REP  ,        SYM_ENT ,NUM_BSP ,    FUN_DEL ,     KC_LEFT ,KC_DOWN ,KC_UP   ,KC_RGHT
   //└────────┴────────┴────────┴────────┘    └────────┘   └────────┴────────┘       └────────┴────────┘   └────────┘    └────────┴────────┴────────┴────────┘
   ),
 
@@ -154,7 +195,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┤                         ├────────┼────────┼────────┼────────┼────────┼────────┼────────┤
      CW_TOGG ,LGUI_A  ,LALT_R  ,LCTL_S  ,LSHFT_T ,KC_G    ,DM_PLY1 ,                          DM_PLY2 ,KC_M    ,RSFT_N  ,RCTL_E  ,LALT_I  ,RGUI_O  ,KC_QUOT ,
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┼────────┐       ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-     KC_LSFT ,KC_Z    ,KC_X    ,KC_C    ,KC_D    ,KC_V    ,TG(_NAV),TG_LHND ,        REPEAT  ,TG(_NUM),KC_K    ,KC_H    ,KC_COMM ,KC_DOT  ,KC_SLSH ,KC_RSFT ,
+     KC_LSFT ,KC_Z    ,KC_X    ,KC_C    ,KC_D    ,KC_V    ,TG(_NAV),TG_LHND ,        QK_REP  ,TG(_NUM),KC_K    ,KC_H    ,KC_COMM ,KC_DOT  ,KC_SLSH ,KC_RSFT ,
   //├────────┼────────┼────────┼────────┼────┬───┴────┬───┼────────┼────────┤       ├────────┼────────┼───┬────┴───┬────┼────────┼────────┼────────┼────────┤
      KC_LCTL ,KC_LGUI ,QWERTY_ ,KC_APP  ,     MED_ESC ,    NAV_SPC ,MOU_TAB ,        SYM_ENT ,NUM_BSP ,    FUN_DEL ,     KC_LEFT ,KC_DOWN ,KC_UP   ,KC_RGHT
   //└────────┴────────┴────────┴────────┘    └────────┘   └────────┴────────┘       └────────┴────────┘   └────────┘    └────────┴────────┴────────┴────────┘
@@ -232,15 +273,15 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   [_NUM] = LAYOUT(
   //┌────────┬────────┬────────┬────────┬────────┬────────┐                                           ┌────────┬────────┬────────┬────────┬────────┬────────┐
-     KC_DEL  ,_______ ,_______ ,_______ ,_______ ,_______ ,                                            _______ ,_______ ,_______ ,_______ ,_______ ,XXXXXXX ,
+     KC_DEL  ,_______ ,KC_7    ,KC_8    ,KC_9    ,_______ ,                                            _______ ,_______ ,_______ ,_______ ,_______ ,XXXXXXX ,
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐                         ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-     KC_BSPC ,KC_ASTR ,KC_7    ,KC_8    ,KC_9    ,KC_PLUS ,_______ ,                          _______ ,XXXXXXX ,XXXXXXX ,XXXXXXX ,XXXXXXX ,XXXXXXX ,XXXXXXX ,
+     KC_BSPC ,KC_ASTR ,KC_4    ,KC_5    ,KC_6    ,KC_PLUS ,_______ ,                          _______ ,XXXXXXX ,XXXXXXX ,XXXXXXX ,XXXXXXX ,XXXXXXX ,XXXXXXX ,
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┤                         ├────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-     KC_ENT  ,KC_SLSH ,KC_4    ,KC_5    ,KC_6    ,KC_MINS ,_______ ,                          _______ ,XXXXXXX ,KC_RSFT ,KC_RCTL ,KC_LALT ,KC_RGUI ,XXXXXXX ,
+     KC_ENT  ,KC_SLSH ,KC_1    ,KC_2    ,KC_3    ,KC_MINS ,_______ ,                          _______ ,XXXXXXX ,KC_RSFT ,KC_RCTL ,KC_LALT ,KC_RGUI ,XXXXXXX ,
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┼────────┐       ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-     XXXXXXX ,KC_CIRC ,KC_1    ,KC_2    ,KC_3    ,KC_EQL  ,TO(_NAV),XXXXXXX ,        TO_BASE ,TO_BASE ,XXXXXXX ,XXXXXXX ,XXXXXXX ,KC_RALT ,XXXXXXX ,XXXXXXX ,
+     TO_BASE ,KC_MINS ,KC_PLUS ,KC_0    ,NAV_DOT ,KC_EQL  ,TO(_NAV),XXXXXXX ,        TO_BASE ,TO_BASE ,XXXXXXX ,XXXXXXX ,XXXXXXX ,KC_RALT ,XXXXXXX ,XXXXXXX ,
   //├────────┼────────┼────────┼────────┼────┬───┴────┬───┼────────┼────────┤       ├────────┼────────┼───┬────┴───┬────┼────────┼────────┼────────┼────────┤
-     _______ ,_______ ,_______ ,_______ ,     TD(DOT) ,    TD(U_SP),KC_0    ,        KC_ENT  ,KC_BSPC ,    KC_DEL  ,     _______ ,_______ ,_______ ,_______
+     _______ ,_______ ,_______ ,_______ ,     KC_ENT  ,    _______ ,_______ ,        KC_ENT  ,KC_BSPC ,    KC_DEL  ,     _______ ,_______ ,_______ ,_______
   //└────────┴────────┴────────┴────────┘    └────────┘   └────────┴────────┘       └────────┴────────┘   └────────┘    └────────┴────────┴────────┴────────┘
   ),
 
@@ -250,9 +291,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐                         ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
      XXXXXXX ,QK_BOOT  ,XXXXXXX ,XXXXXXX ,XXXXXXX ,XXXXXXX ,_______ ,                          _______ ,REDO    ,PASTE   ,COPY    ,CUT     ,UNDO    ,XXXXXXX ,
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┤                         ├────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-     XXXXXXX ,KC_LGUI ,KC_LALT ,KC_LCTL ,KC_LSFT ,XXXXXXX ,_______ ,                          _______ ,KC_LEFT ,KC_DOWN ,KC_UP   ,KC_RGHT ,CTL_LFT ,XXXXXXX ,
+     XXXXXXX ,XXXXXXX ,TH_ESC  ,TH_BDEL ,KC_APP  ,XXXXXXX ,DM_PLY1 ,                          DM_PLY2 ,XXXXXXX ,KC_DEL  ,TH_UP   ,TH_BSPC ,XXXXXXX ,XXXXXXX ,
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┼────────┐       ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-     XXXXXXX ,XXXXXXX ,KC_RALT ,XXXXXXX ,XXXXXXX ,XXXXXXX ,TO_BASE ,XXXXXXX ,        TO_BASE ,TO(_NUM),KC_HOME ,KC_PGDN ,KC_PGUP ,KC_END  ,KC_INS  ,XXXXXXX ,
+     KC_ENT  ,TH_TAB  ,TH_UNDO ,TH_COPY ,XXXXXXX ,XXXXXXX ,XXXXXXX ,XXXXXXX ,        XXXXXXX ,XXXXXXX ,XXXXXXX ,TH_LEFT ,TH_DOWN ,TH_RGHT ,KC_ENT  ,XXXXXXX ,
   //├────────┼────────┼────────┼────────┼────┬───┴────┬───┼────────┼────────┤       ├────────┼────────┼───┬────┴───┬────┼────────┼────────┼────────┼────────┤
      _______ ,_______ ,_______ ,_______ ,     XXXXXXX ,    _______ ,XXXXXXX ,        KC_ENT  ,KC_BSPC ,    KC_DEL  ,     _______ ,_______ ,_______ ,_______
   //└────────┴────────┴────────┴────────┘    └────────┘   └────────┴────────┘       └────────┴────────┘   └────────┘    └────────┴────────┴────────┴────────┘
@@ -317,6 +358,23 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 
 
+bool register_tap_hold(uint16_t tap_keycode, uint16_t hold_keycode, keyrecord_t *record) {
+    if (record->tap.count && record->event.pressed) {
+      //   register_key_to_repeat(tap_keycode);
+        tap_code16(tap_keycode);
+        set_last_keycode(tap_keycode);
+        return false;
+    } else if (record->event.pressed) {
+      //   register_key_to_repeat(hold_keycode);
+        tap_code16(hold_keycode);
+        set_last_keycode(hold_keycode);
+        return false;
+    } else {
+        return true;
+    }
+}
+
+
 // Used to extract the basic tapping keycode from a dual-role key.
 // Example: GET_TAP_KC(MT(MOD_RSFT, KC_E)) == KC_E
 #define GET_TAP_KC(dual_role_key) dual_role_key & 0xFF
@@ -324,44 +382,44 @@ uint16_t last_keycode = KC_NO;
 uint8_t last_modifier = 0;
 uint16_t pressed_keycode = KC_NO;
 
-void process_repeat_key(uint16_t keycode, const keyrecord_t *record) {
-  if (keycode != REPEAT) {
-    // Early return when holding down a pure layer key
-    // to retain modifiers
-    switch (keycode) {
-      case QK_DEF_LAYER ... QK_DEF_LAYER_MAX:
-      case QK_MOMENTARY ... QK_MOMENTARY_MAX:
-      case QK_LAYER_MOD ... QK_LAYER_MOD_MAX:
-      case QK_ONE_SHOT_LAYER ... QK_ONE_SHOT_LAYER_MAX:
-      case QK_TOGGLE_LAYER ... QK_TOGGLE_LAYER_MAX:
-      case QK_TO ... QK_TO_MAX:
-      case QK_LAYER_TAP_TOGGLE ... QK_LAYER_TAP_TOGGLE_MAX:
-      case QK_MODS ... QK_MODS_MAX:
-        return;
-    }
-    if (record->event.pressed) {
-      last_modifier = get_mods() | get_oneshot_mods();
-      switch (keycode) {
-        case QK_LAYER_TAP ... QK_LAYER_TAP_MAX:
-        case QK_MOD_TAP ... QK_MOD_TAP_MAX:
-          last_keycode = GET_TAP_KC(keycode);
-          break;
-        default:
-          last_keycode = keycode;
-          break;
-        }
-    }
-  } else { // keycode == REPEAT
-    if (record->event.pressed) {
-      pressed_keycode = last_keycode;
-      register_mods(last_modifier);
-      register_code16(pressed_keycode);
-      unregister_mods(last_modifier);
-    } else {
-      unregister_code16(pressed_keycode);
-    }
-  }
-}
+// void process_repeat_key(uint16_t keycode, const keyrecord_t *record) {
+//   if (keycode != REPEAT) {
+//     // Early return when holding down a pure layer key
+//     // to retain modifiers
+//     switch (keycode) {
+//       case QK_DEF_LAYER ... QK_DEF_LAYER_MAX:
+//       case QK_MOMENTARY ... QK_MOMENTARY_MAX:
+//       case QK_LAYER_MOD ... QK_LAYER_MOD_MAX:
+//       case QK_ONE_SHOT_LAYER ... QK_ONE_SHOT_LAYER_MAX:
+//       case QK_TOGGLE_LAYER ... QK_TOGGLE_LAYER_MAX:
+//       case QK_TO ... QK_TO_MAX:
+//       case QK_LAYER_TAP_TOGGLE ... QK_LAYER_TAP_TOGGLE_MAX:
+//       case QK_MODS ... QK_MODS_MAX:
+//         return;
+//     }
+//     if (record->event.pressed) {
+//       last_modifier = get_mods() | get_oneshot_mods();
+//       switch (keycode) {
+//         case QK_LAYER_TAP ... QK_LAYER_TAP_MAX:
+//         case QK_MOD_TAP ... QK_MOD_TAP_MAX:
+//           last_keycode = GET_TAP_KC(keycode);
+//           break;
+//         default:
+//           last_keycode = keycode;
+//           break;
+//         }
+//     }
+//   } else { // keycode == REPEAT
+//     if (record->event.pressed) {
+//       pressed_keycode = last_keycode;
+//       register_mods(last_modifier);
+//       register_code16(pressed_keycode);
+//       unregister_mods(last_modifier);
+//     } else {
+//       unregister_code16(pressed_keycode);
+//     }
+//   }
+// }
 
 
 void app_switch(uint16_t keycode, const keyrecord_t *record) {
@@ -408,8 +466,30 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case APP_0:
           app_switch(KC_0, record);
           break;
+        // Tap Hold Keys
+        case TH_LEFT:
+            return register_tap_hold(keycode, KC_HOME, record);
+        case TH_RGHT:
+            return register_tap_hold(keycode, KC_END, record);
+        case TH_DOWN:
+            return register_tap_hold(keycode, KC_PGDN, record);
+        case TH_UP:
+            return register_tap_hold(keycode, KC_PGUP, record);
+        case TH_BSPC:
+            return register_tap_hold(keycode, LCTL(KC_BSPC), record);
+        case TH_COPY:
+            return register_tap_hold(COPY, PASTE, record);
+        case TH_UNDO:
+            return register_tap_hold(UNDO, REDO, record);
+        case TH_TAB:
+            return register_tap_hold(keycode, KC_ENT, record);
+        case TH_ESC:
+            return register_tap_hold(keycode, LCTL(KC_A), record);
+        case TH_BDEL:
+            return register_tap_hold(KC_BSPC, KC_DEL, record);
         default:
-          process_repeat_key(keycode, record);
+            return true;
+         //  process_repeat_key(keycode, record);
     }
     return true;
 };
